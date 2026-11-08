@@ -84,6 +84,13 @@ def test_copy_in_overwrite():
     assert (b.inbox / "f.exe").read_text() == "2"
 
 
+def test_sandbox_vms():  # hcsdiag list 실제 출력 형태 (템플릿 VM은 건드리면 안 됨)
+    out = ("17fed142-120b-4747-8e33-473a89688c45\n    VM,                       \tRunning, 17FED142-120B-4747-8E33-473A89688C45, WindowsSandbox\n\n"
+           "5d33816f-1277-499f-a9b3-a5f7ea5c6a84\n    VM,                       \tSavedAsTemplate, 5D33816F-1277-499F-A9B3-A5F7EA5C6A84, CmService\n")
+    assert winbox._sandbox_vms(out) == ["17fed142-120b-4747-8e33-473a89688c45"]
+    assert winbox._sandbox_vms(out.replace("Running", "Stopped")) == []
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

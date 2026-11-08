@@ -11,6 +11,7 @@ WINBOX_LOCAL=1 이면 샌드박스 대신 호스트에서 에이전트를 직접
 import base64
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -19,7 +20,7 @@ import uuid
 from pathlib import Path
 from xml.sax.saxutils import escape
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 HERE = Path(__file__).resolve().parent
 GUEST_TOOLS = HERE / "guest"
 RUNS = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "winbox" / "runs"
@@ -142,13 +143,26 @@ def release():
 
 
 def _sandbox_running():
+    # 창(WindowsSandbox*.exe)만 보면 안 된다: 창을 닫아도 VM(vmmemWindowsSandbox)은 몇 초~수십 초 더 살아 있고,
+    # 그 사이 새 샌드박스를 띄우면 "너무 많은 세션이 설정되어 있습니다" 창이 뜨며 부팅이 안 된다(실측).
     out = subprocess.run(["tasklist", "/NH", "/FO", "CSV"], capture_output=True, text=True, errors="replace").stdout
-    return any(l.lower().startswith('"windowssandbox') for l in out.splitlines())  # 이름 앞부분만(다른 *-sandbox-service 오탐 방지)
+    return any(l.lower().startswith(('"windowssandbox', '"vmmemwindowssandbox')) for l in out.splitlines())
 
 
-def _kill_sandbox():
+def _sandbox_vms(hcsdiag_list):
+    return re.findall(r"^(\S{36})\s*\n\s*VM,\s*Running,.*WindowsSandbox\s*$", hcsdiag_list, re.M)
+
+
+def _kill_sandbox(wait_s=90):
     subprocess.run(["taskkill", "/F", "/IM", "WindowsSandbox*"], capture_output=True)
     subprocess.run(["schtasks", "/Delete", "/TN", TASK, "/F"], capture_output=True)
+    # 창만 죽이면 VM이 계속 산다(실측: 주인 잃은 VM이 몇 분째 3GB 점유). VM은 hcsdiag(관리자)로 직접 끈다.
+    # ponytail: 관리자 아닌 SSH면 hcsdiag가 실패 → 아래 대기 후 start가 "이미 떠 있음"으로 알린다
+    for vid in _sandbox_vms(subprocess.run(["hcsdiag", "list"], capture_output=True, text=True, errors="replace").stdout):
+        subprocess.run(["hcsdiag", "kill", vid], capture_output=True)
+    t0 = time.time()
+    while _sandbox_running() and time.time() - t0 < wait_s:  # VM이 완전히 내려갈 때까지
+        time.sleep(1)
 
 
 class Box:
@@ -246,8 +260,7 @@ class Box:
             except Exception:
                 p.kill()
         else:
-            time.sleep(0 if force else 8)
-            _kill_sandbox()
+            _kill_sandbox()  # 일회용이라 게스트 정상 종료를 기다릴 이유가 없다 — 산출물은 이미 호스트 폴더에 있음
         self.run = None
         if not keep_lock:
             release()
