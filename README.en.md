@@ -19,6 +19,18 @@ Test Excel add-ins and installers, or run reverse-engineering experiments (an un
                             (network on/off, everything wiped on close)
 ```
 
+## When it's useful
+
+| When you need to… | What winbox does | Status |
+|---|---|---|
+| Check that your installer or ZIP release works on **someone else's clean PC** | Install with `box_trial` in a fresh sandbox every time → fix → retry | ✅ Ready |
+| See **what an installer puts where, and what's left after uninstall** (folders, registry, scheduled tasks, autoruns) | `box_snapshot` before/after install and after removal → `box_diff` | ✅ Measured (all 3 planted items caught) |
+| Try a dubious exe or third-party tool **before installing it on your own PC** | Run it in a `network=off` sandbox → check connection attempts, DNS, autoruns | ✅ Ready |
+| Let an AI agent on Mac/Linux do a **Windows-only check** (PowerShell, behavior on Korean-language Windows) | `box_exec` in the sandbox over one SSH line → collect output and screenshots | ✅ Ready |
+| Confirm an Excel add-in **actually loads inside Excel** | Install Office offline each time, then check | ⚠️ Not measured yet (no Office in the sandbox) |
+
+**Not a good fit**: real malware analysis (it does not stop sandbox escapes — use a dedicated analysis machine), UI automation that clicks buttons (deliberately left out), or a host PC that is off or has no one logged in at the console.
+
 ## Requirements (Windows host)
 
 1. Windows 10/11 **Pro, Enterprise or Education** (Home has no Sandbox), virtualization enabled
