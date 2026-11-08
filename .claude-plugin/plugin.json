@@ -1,0 +1,21 @@
+{
+  "name": "winbox",
+  "version": "0.2.0",
+  "description": "SSH로 붙는 일회용 Windows 샌드박스 MCP — 애드인·설치기 시험, 모르는 exe 동적분석",
+  "license": "MIT",
+  "keywords": ["windows", "sandbox", "mcp", "ssh", "excel-addin", "reverse-engineering"],
+  "userConfig": {
+    "host": {
+      "type": "string",
+      "title": "Windows 호스트",
+      "description": "SSH 접속 대상 (예: me@my-pc). 키 로그인이 돼 있어야 함",
+      "required": true
+    }
+  },
+  "mcpServers": {
+    "winbox": {
+      "command": "ssh",
+      "args": ["-T", "-o", "BatchMode=yes", "${user_config.host}", "py -3 winbox-mcp\\winbox.py"]
+    }
+  }
+}

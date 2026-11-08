@@ -1,0 +1,5 @@
+{
+  "name": "winbox",
+  "owner": {"name": "yooseong"},
+  "plugins": [{"name": "winbox", "source": "./", "description": "SSH로 붙는 일회용 Windows 샌드박스 MCP"}]
+}
