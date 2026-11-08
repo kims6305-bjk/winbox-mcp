@@ -1,6 +1,6 @@
 {
   "name": "winbox",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "SSH로 붙는 일회용 Windows 샌드박스 MCP — 애드인·설치기 시험, 모르는 exe 동적분석",
   "license": "MIT",
   "keywords": ["windows", "sandbox", "mcp", "ssh", "excel-addin", "reverse-engineering"],

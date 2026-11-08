@@ -19,7 +19,7 @@ import uuid
 from pathlib import Path
 from xml.sax.saxutils import escape
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 HERE = Path(__file__).resolve().parent
 GUEST_TOOLS = HERE / "guest"
 RUNS = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "winbox" / "runs"
@@ -82,7 +82,7 @@ def diff_summary(d, cap=40):
 def _alive(pid):
     if os.name == "nt":  # os.kill(pid, 0)은 Windows에서 프로세스를 죽인다 → tasklist로 확인
         out = subprocess.run(["tasklist", "/FI", "PID eq %d" % pid, "/NH", "/FO", "CSV"],
-                             capture_output=True, text=True).stdout
+                             capture_output=True, text=True, errors="replace").stdout
         return '"%d"' % pid in out
     try:
         os.kill(pid, 0)
@@ -142,8 +142,8 @@ def release():
 
 
 def _sandbox_running():
-    out = subprocess.run(["tasklist", "/NH", "/FO", "CSV"], capture_output=True, text=True).stdout
-    return "windowssandbox" in out.lower()
+    out = subprocess.run(["tasklist", "/NH", "/FO", "CSV"], capture_output=True, text=True, errors="replace").stdout
+    return any(l.lower().startswith('"windowssandbox') for l in out.splitlines())  # 이름 앞부분만(다른 *-sandbox-service 오탐 방지)
 
 
 def _kill_sandbox():
@@ -154,6 +154,7 @@ def _kill_sandbox():
 class Box:
     def __init__(self):
         self.run = None
+        self.local = bool(os.environ.get("WINBOX_LOCAL"))
         self.owner = os.environ.get("WINBOX_OWNER") or "pid %d" % os.getpid()
 
     # -- 상태 ---------------------------------------------------------------
@@ -195,8 +196,9 @@ class Box:
             else:
                 self.groot = Path(r"C:\winbox")
                 self.mail, self.inbox = run / "mail", run / "in"
-            for d in (self.mail / "req", self.mail / "res", self.mail / "out", self.inbox):
+            for d in (self.mail / "res", self.mail / "out", self.inbox):
                 d.mkdir(parents=True, exist_ok=True)
+            (self.mail / "req.json").write_text("{}", encoding="utf-8")  # 부팅 전에 있어야 게스트가 내용 변경을 바로 본다
             self.proc = None
             if self.local:
                 self.proc = subprocess.Popen(
@@ -225,7 +227,7 @@ class Box:
             raise BoxError("WindowsSandbox.exe 없음 — 'Windows 기능 켜기/끄기'에서 Windows 샌드박스를 켜고 재부팅")
         for args in (["/Create", "/TN", TASK, "/TR", "%s %s" % (exe, wsb), "/SC", "ONCE", "/ST", "23:59", "/IT", "/F"],
                      ["/Run", "/TN", TASK]):
-            p = subprocess.run(["schtasks"] + args, capture_output=True, text=True)
+            p = subprocess.run(["schtasks"] + args, capture_output=True, text=True, errors="replace")
             if p.returncode:
                 raise BoxError("schtasks %s 실패: %s" % (args[0], (p.stderr or p.stdout).strip()))
 
@@ -283,10 +285,10 @@ class Box:
 
     # -- 우편함 --------------------------------------------------------------
     def _send(self, req):
+        # 샌드박스 공유폴더는 새 파일 이름을 ~20초 늦게 보여주지만(실측), 이미 있는 파일의 내용 변경은 바로 보인다
+        # → 요청은 새 파일이 아니라 req.json 한 개를 덮어써서 보낸다. 게스트는 id가 바뀌면 처리.
         rid = uuid.uuid4().hex[:12]
-        tmp = self.mail / "req" / (rid + ".tmp")
-        tmp.write_text(json.dumps(req, ensure_ascii=False), encoding="utf-8")
-        tmp.replace(self.mail / "req" / (rid + ".json"))
+        (self.mail / "req.json").write_text(json.dumps(dict(req, id=rid), ensure_ascii=False), encoding="utf-8")
         return rid
 
     def exec(self, command, timeout_s=120):
@@ -317,7 +319,16 @@ class Box:
         elif dst.exists():
             dst.unlink()
         (shutil.copytree if src.is_dir() else shutil.copy2)(str(src), str(dst))
-        return self.gpath("in", src.name)
+        g = self.gpath("in", src.name)
+        if not self.local:  # 샌드박스는 새로 넣은 파일을 늦게 본다(실측 ~20초) → 보일 때까지 기다려야 바로 실행해도 안전
+            files = [f for f in dst.rglob("*") if f.is_file()] if dst.is_dir() else [dst]
+            n, size = len(files), sum(f.stat().st_size for f in files)
+            r = self.exec("$p='%s'; $t=Get-Date; do { $f=@(Get-ChildItem -LiteralPath $p -Recurse -File -Force -EA 0); "
+                          "if ($f.Count -eq %d -and ($f | Measure Length -Sum).Sum -eq %d) { exit 0 }; Start-Sleep -m 300 } "
+                          "while (((Get-Date)-$t).TotalSeconds -lt 90); exit 1" % (g.replace("'", "''"), n, size), 120)
+            if r.get("exit"):
+                raise BoxError("넣은 파일이 90초 안에 샌드박스에 안 보임: %s" % g)
+        return g
 
     def copy_out(self, guest_path):
         self._need()

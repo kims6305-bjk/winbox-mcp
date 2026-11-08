@@ -1,7 +1,7 @@
 ---
 name: winbox-mcp
 description: "Use when 깨끗한 윈도우에서 애드인·설치기 시험이나 모르는 exe 동적분석할 때. SSH-only MCP over Windows Sandbox: boot, exec, copy, screenshot, snapshot/diff, discard."
-version: 0.2.0
+version: 0.2.1
 license: MIT
 metadata:
   hermes:

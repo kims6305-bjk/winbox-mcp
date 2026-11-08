@@ -1,9 +1,9 @@
 ﻿# winbox 게스트 에이전트 — 샌드박스 안(또는 -Local 시 호스트)에서 우편함을 감시하며 PowerShell 요청을 실행한다.
 param([string]$Root = 'C:\winbox', [switch]$Local, [int]$IdleMinutes = 30)
 $ErrorActionPreference = 'Continue'
-$mail = Join-Path $Root 'mail'; $req = Join-Path $mail 'req'; $res = Join-Path $mail 'res'
+$mail = Join-Path $Root 'mail'; $req = Join-Path $mail 'req.json'; $res = Join-Path $mail 'res'
 $tmpd = if ($Local) { Join-Path $Root 'tmp' } else { 'C:\winbox-tmp' }  # 스냅샷 대상 경로 밖
-New-Item -ItemType Directory -Force $req, $res, (Join-Path $mail 'out'), $tmpd | Out-Null
+New-Item -ItemType Directory -Force $res, (Join-Path $mail 'out'), $tmpd | Out-Null
 $utf8 = New-Object System.Text.UTF8Encoding $true
 
 function Stop-Box {
@@ -32,16 +32,18 @@ function Invoke-Exec($r) {
 }
 
 [IO.File]::WriteAllText((Join-Path $mail 'ready'), "$env:COMPUTERNAME $env:USERNAME $(Get-Date -Format o)", $utf8)
-$last = Get-Date
+$last = Get-Date; $done = ''
 while ($true) {
-    foreach ($f in @(Get-ChildItem $req -Filter *.json -ErrorAction SilentlyContinue)) {
-        try { $r = [IO.File]::ReadAllText($f.FullName) | ConvertFrom-Json } catch { continue }
-        Remove-Item $f.FullName -Force -ErrorAction SilentlyContinue
+    # 요청 = req.json 내용(호스트가 덮어씀). 쓰는 도중 읽으면 JSON이 깨져 다음 바퀴에 다시 읽는다.
+    $r = $null
+    try { $r = [IO.File]::ReadAllText($req) | ConvertFrom-Json } catch {}
+    if ($r -and $r.id -and $r.id -ne $done) {
+        $done = $r.id
         if ($r.op -eq 'stop') { Stop-Box }
         try { $out = Invoke-Exec $r } catch { $out = @{ exit = -2; stdout = ''; stderr = "agent: $_"; timed_out = $false } }
-        $tmp = Join-Path $res "$($f.BaseName).tmp"
+        $tmp = Join-Path $res "$($r.id).tmp"
         [IO.File]::WriteAllText($tmp, ($out | ConvertTo-Json -Compress), $utf8)
-        Move-Item $tmp (Join-Path $res "$($f.BaseName).json") -Force
+        Move-Item $tmp (Join-Path $res "$($r.id).json") -Force
         $last = Get-Date
     }
     if (((Get-Date) - $last).TotalMinutes -gt $IdleMinutes) { Stop-Box }

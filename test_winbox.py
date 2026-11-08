@@ -71,6 +71,7 @@ def test_copy_in_overwrite():
     from pathlib import Path
     d = Path(tempfile.mkdtemp())
     b = winbox.Box()
+    b.local = True
     b.run, b.inbox, b.groot = d, d / "in", Path(r"C:\winbox")
     b.inbox.mkdir()
     (d / "build").mkdir()
