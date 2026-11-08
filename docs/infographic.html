@@ -1,10 +1,10 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
-<!-- 렌더: chrome --headless --screenshot --window-size=1600,960 "file://.../infographic.html?lang=ko|en" -->
+<!-- 렌더: chrome --headless --screenshot --window-size=1600,1290 "file://.../infographic.html?lang=ko|en" -->
 <style>
 :root{--ink:#12203a;--mut:#5b6678;--line:#d9dee7;--paper:#f7f8fa;--blue:#0067c0;--green:#1f8a4c;--amber:#b85c00;--card:#fff}
 *{box-sizing:border-box;margin:0}
-body{width:1600px;height:960px;background:var(--paper);color:var(--ink);padding:44px 52px;
+body{width:1600px;height:1290px;background:var(--paper);color:var(--ink);padding:44px 52px;
  font-family:'Pretendard','Apple SD Gothic Neo','Segoe UI',-apple-system,sans-serif;word-break:keep-all}
 .kick{font-size:17px;font-weight:700;color:var(--blue);letter-spacing:.06em}
 h1{font-size:44px;font-weight:800;margin:6px 0 4px}
@@ -30,6 +30,14 @@ h1{font-size:44px;font-weight:800;margin:6px 0 4px}
 .code{font:13px ui-monospace,Menlo,monospace;color:var(--mut);background:#f0f2f6;border-radius:8px;padding:8px 10px;margin-top:6px}
 .foot{margin-top:18px;font-size:14px;color:var(--mut)}
 .pill{display:inline-block;border:1px solid var(--amber);color:var(--amber);border-radius:999px;padding:3px 12px;font-size:14px;font-weight:700;margin-right:8px;white-space:nowrap}
+.ut{width:100%;border-collapse:collapse;font-size:16px}
+.ut td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top;line-height:1.4}
+.ut tr:first-child td{border-top:0}
+.ut td:first-child{font-weight:700;width:44%}
+.ut td:nth-child(2){color:var(--mut)}
+.ut td:last-child{width:18%;white-space:nowrap;font-weight:700}
+.ok{color:var(--green)}.warn{color:var(--amber)}
+.nf{margin-top:10px;font-size:15px;color:var(--mut)}.nf b{color:var(--ink)}
 </style></head><body>
 <div class="kick" data-k="kick"></div>
 <h1 data-k="title"></h1>
@@ -44,6 +52,12 @@ h1{font-size:44px;font-weight:800;margin:6px 0 4px}
   <div class="arr"><i>→</i><span data-k="a2"></span></div>
   <div class="node sb"><b data-k="n3b"></b><span data-k="n3s"></span></div>
  </div>
+</div>
+
+<div class="card" style="margin-top:22px">
+ <div class="h" data-k="h_use"></div>
+ <table class="ut" id="use"></table>
+ <div class="nf" data-k="nf"></div>
 </div>
 
 <div class="row">
@@ -76,6 +90,13 @@ a1:"ssh -T (표준입출력)",
 n2b:"Windows 호스트 · winbox.py",n2s:"MCP 서버 · 호스트 전역 잠금으로 여러 에이전트 줄 세우기",
 a2:"공유 폴더 우편함 mail\\req.json",
 n3b:"Windows Sandbox · agent.ps1",n3s:"Hyper-V 별도 커널 · 네트워크 on/off · 종료 시 전부 삭제",
+h_use:"언제 유용한가",
+use:[["만든 설치기·ZIP 배포본이 남의 깨끗한 PC에서도 되는지","매번 새 샌드박스에 box_trial로 설치 → 고치고 다시","✅ 바로 사용",1],
+["설치기가 어디에 뭘 깔고, 지운 뒤 뭐가 남는지","설치 전후·제거 후 box_snapshot → box_diff","✅ 실측 (3종 탐지)",1],
+["출처가 애매한 exe·외부 도구를 내 PC에 깔기 전에 맛보기","network=off 샌드박스에서 실행 → 연결 시도·DNS·자동실행","✅ 바로 사용",1],
+["맥/리눅스 AI 에이전트의 Windows 전용 확인","SSH 한 줄로 box_exec → 결과·화면 회수","✅ 바로 사용",1],
+["엑셀 애드인이 엑셀 안에서 실제로 뜨는지","매번 Office 오프라인 설치 후 확인","⚠️ 미실측",0]],
+nf:"<b>안 맞는 경우</b> — 진짜 악성코드 분석(샌드박스 탈출은 못 막음) · 버튼 누르는 UI 자동화(일부러 뺌) · 호스트가 꺼졌거나 콘솔 로그인 안 됨",
 h_tools:"도구 11개",h_uc:"대표 시나리오",
 uc1:"<b>① 애드인·설치기 시험</b> — 무엇을 어디에 깔았고, 지운 뒤 뭐가 남나",
 uc2:"<b>② 동적 분석</b> — 자동실행·서비스·예약작업·연결 시도·DNS 조회",
@@ -94,6 +115,13 @@ a1:"ssh -T (stdio)",
 n2b:"Windows host · winbox.py",n2s:"MCP server · host-wide lock queues multiple agents",
 a2:"shared-folder mailbox mail\\req.json",
 n3b:"Windows Sandbox · agent.ps1",n3s:"Separate Hyper-V kernel · network on/off · wiped on close",
+h_use:"When it's useful",
+use:[["Does your installer / ZIP release work on someone else's clean PC?","box_trial into a fresh sandbox every time → fix → retry","✅ Ready",1],
+["What does an installer put where, and what's left after uninstall?","box_snapshot before/after install and removal → box_diff","✅ Measured (3/3)",1],
+["Try a dubious exe or tool before installing it on your own PC","Run in a network=off sandbox → connections, DNS, autoruns","✅ Ready",1],
+["Windows-only checks for an AI agent on Mac/Linux","box_exec over one SSH line → output and screenshots","✅ Ready",1],
+["Does an Excel add-in actually load inside Excel?","Install Office offline each time, then check","⚠️ Not measured",0]],
+nf:"<b>Not a good fit</b> — real malware analysis (no protection from sandbox escapes) · UI automation that clicks buttons (left out) · host off or nobody logged in",
 h_tools:"11 tools",h_uc:"Typical scenarios",
 uc1:"<b>① Add-in / installer test</b> — what got installed where, and what's left after uninstall",
 uc2:"<b>② Dynamic analysis</b> — autoruns, services, scheduled tasks, connections, DNS",
@@ -108,5 +136,6 @@ const L=T[new URLSearchParams(location.search).get("lang")||"ko"];
 document.documentElement.lang=L===T.en?"en":"ko";
 document.querySelectorAll("[data-k]").forEach(e=>e.innerHTML=L[e.dataset.k]);
 tools.innerHTML=L.tools.map(([a,b])=>`<div class="t">${a}<small>${b}</small></div>`).join("");
+use.innerHTML=L.use.map(([a,b,c,o])=>`<tr><td>${a}</td><td>${b}</td><td class="${o?"ok":"warn"}">${c}</td></tr>`).join("");
 nums.innerHTML=L.nums.map(([a,b])=>`<div class="n"><b>${a}</b><span>${b}</span></div>`).join("");
 </script></body></html>
