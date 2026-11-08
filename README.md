@@ -1,5 +1,9 @@
 # winbox-mcp
 
+한국어 | [English](README.en.md)
+
+![winbox-mcp 한눈에 보기](docs/infographic.ko.png)
+
 **SSH 한 줄로 붙는, 일회용 Windows 샌드박스 MCP 서버.**
 엑셀 애드인·설치 프로그램 시험과 리버스 엔지니어링 실험(모르는 exe 실행)을 깨끗한 Windows에서 하고, 끝나면 통째로 버린다.
 

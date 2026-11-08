@@ -1,0 +1,112 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- 렌더: chrome --headless --screenshot --window-size=1600,960 "file://.../infographic.html?lang=ko|en" -->
+<style>
+:root{--ink:#12203a;--mut:#5b6678;--line:#d9dee7;--paper:#f7f8fa;--blue:#0067c0;--green:#1f8a4c;--amber:#b85c00;--card:#fff}
+*{box-sizing:border-box;margin:0}
+body{width:1600px;height:960px;background:var(--paper);color:var(--ink);padding:44px 52px;
+ font-family:'Pretendard','Apple SD Gothic Neo','Segoe UI',-apple-system,sans-serif;word-break:keep-all}
+.kick{font-size:17px;font-weight:700;color:var(--blue);letter-spacing:.06em}
+h1{font-size:44px;font-weight:800;margin:6px 0 4px}
+.sub{font-size:20px;color:var(--mut)}
+.row{display:flex;gap:22px;margin-top:26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.h{font-size:15px;font-weight:800;color:var(--mut);letter-spacing:.08em;margin-bottom:14px}
+.flow{display:flex;align-items:center;gap:14px}
+.node{flex:1;border:2px solid var(--ink);border-radius:12px;padding:14px 16px;min-height:112px}
+.node b{display:block;font-size:20px;margin-bottom:6px}
+.node span{font-size:15px;color:var(--mut);line-height:1.45}
+.node.sb{border-color:var(--blue);background:#eef5fc}
+.arr{text-align:center;font-size:14px;color:var(--mut);width:150px;line-height:1.35}
+.arr i{display:block;font-style:normal;font-size:28px;color:var(--ink)}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.t{font:600 15px ui-monospace,Menlo,monospace;background:#f0f2f6;border-radius:8px;padding:8px 10px}
+.t small{display:block;font:400 13px 'Apple SD Gothic Neo','Segoe UI',sans-serif;color:var(--mut);margin-top:3px}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.n b{display:block;font-size:34px;font-weight:800;color:var(--green)}
+.n span{font-size:14px;color:var(--mut);line-height:1.35}
+.uc{font-size:16px;line-height:1.5;margin-bottom:12px}
+.uc b{color:var(--blue)}
+.code{font:13px ui-monospace,Menlo,monospace;color:var(--mut);background:#f0f2f6;border-radius:8px;padding:8px 10px;margin-top:6px}
+.foot{margin-top:18px;font-size:14px;color:var(--mut)}
+.pill{display:inline-block;border:1px solid var(--amber);color:var(--amber);border-radius:999px;padding:3px 12px;font-size:14px;font-weight:700;margin-right:8px;white-space:nowrap}
+</style></head><body>
+<div class="kick" data-k="kick"></div>
+<h1 data-k="title"></h1>
+<div class="sub" data-k="sub"></div>
+
+<div class="card" style="margin-top:24px">
+ <div class="h" data-k="h_arch"></div>
+ <div class="flow">
+  <div class="node"><b data-k="n1b"></b><span data-k="n1s"></span></div>
+  <div class="arr"><i>→</i><span data-k="a1"></span></div>
+  <div class="node"><b data-k="n2b"></b><span data-k="n2s"></span></div>
+  <div class="arr"><i>→</i><span data-k="a2"></span></div>
+  <div class="node sb"><b data-k="n3b"></b><span data-k="n3s"></span></div>
+ </div>
+</div>
+
+<div class="row">
+ <div class="card" style="flex:1.25">
+  <div class="h" data-k="h_tools"></div>
+  <div class="tools" id="tools"></div>
+ </div>
+ <div class="card" style="flex:1">
+  <div class="h" data-k="h_uc"></div>
+  <div class="uc" data-k="uc1"></div><div class="code">box_snapshot → install → box_snapshot → box_diff</div>
+  <div class="uc" style="margin-top:14px" data-k="uc2"></div><div class="code">box_start network=off → run sample → box_diff</div>
+ </div>
+</div>
+
+<div class="row">
+ <div class="card" style="flex:1">
+  <div class="h" data-k="h_nums"></div>
+  <div class="nums" id="nums"></div>
+ </div>
+</div>
+<div class="foot"><span class="pill" data-k="p1"></span><span class="pill" data-k="p2"></span><span class="pill" data-k="p3"></span><span data-k="foot"></span></div>
+
+<script>
+const T={
+ko:{kick:"WINBOX-MCP · v0.2.2",title:"SSH 한 줄로 붙는 일회용 Windows 샌드박스 MCP",
+sub:"엑셀 애드인·설치기 시험과 모르는 exe 동적분석을 깨끗한 Windows에서 — 끝나면 통째로 버린다",
+h_arch:"구조 — 호스트에 포트를 열지 않는다",
+n1b:"맥/리눅스 에이전트",n1s:"Claude Code · Hermes · Codex 등 MCP 클라이언트",
+a1:"ssh -T (표준입출력)",
+n2b:"Windows 호스트 · winbox.py",n2s:"MCP 서버 · 호스트 전역 잠금으로 여러 에이전트 줄 세우기",
+a2:"공유 폴더 우편함 mail\\req.json",
+n3b:"Windows Sandbox · agent.ps1",n3s:"Hyper-V 별도 커널 · 네트워크 on/off · 종료 시 전부 삭제",
+h_tools:"도구 11개",h_uc:"대표 시나리오",
+uc1:"<b>① 애드인·설치기 시험</b> — 무엇을 어디에 깔았고, 지운 뒤 뭐가 남나",
+uc2:"<b>② 동적 분석</b> — 자동실행·서비스·예약작업·연결 시도·DNS 조회",
+h_nums:"실측 (Windows 11 24H2 실제 샌드박스)",
+nums:[["11~13초","부팅 (기능 켠 뒤 첫 부팅 72초)"],["≈1.5초","box_exec 왕복 (전엔 20초)"],["13초","box_reset (전엔 30초)"],
+["0개","network=off 네트워크 어댑터"],["≈17초","빈 샌드박스 스냅샷 1장 (≈3MB)"],["3/3","심어 둔 애드인·자동로드·예약작업 탐지"]],
+tools:[["box_start","깨끗하게 부팅"],["box_status","상태·사용자"],["box_reset","버리고 새것"],["box_trial","반복 시험 1회"],
+["box_exec","PowerShell 실행"],["box_copy_in","파일 넣기"],["box_copy_out","파일 꺼내기"],["box_screenshot","화면 PNG"],
+["box_snapshot","파일·레지스트리·서비스…"],["box_diff","전후 비교"],["box_stop","폐기"]],
+p1:"stdlib Python + PowerShell",p2:"pip·Node 없음",p3:"MIT",foot:"아직 실측 전: 샌드박스 안 Office로 애드인 로드 확인"},
+en:{kick:"WINBOX-MCP · v0.2.2",title:"A disposable Windows Sandbox MCP, one SSH line away",
+sub:"Test Excel add-ins and installers, or watch an unknown exe, on a clean Windows — then throw it all away",
+h_arch:"Architecture — no ports opened on the host",
+n1b:"Mac / Linux agent",n1s:"Claude Code · Hermes · Codex or any MCP client",
+a1:"ssh -T (stdio)",
+n2b:"Windows host · winbox.py",n2s:"MCP server · host-wide lock queues multiple agents",
+a2:"shared-folder mailbox mail\\req.json",
+n3b:"Windows Sandbox · agent.ps1",n3s:"Separate Hyper-V kernel · network on/off · wiped on close",
+h_tools:"11 tools",h_uc:"Typical scenarios",
+uc1:"<b>① Add-in / installer test</b> — what got installed where, and what's left after uninstall",
+uc2:"<b>② Dynamic analysis</b> — autoruns, services, scheduled tasks, connections, DNS",
+h_nums:"Measured (real sandbox, Windows 11 24H2)",
+nums:[["11–13 s","boot (very first boot 72 s)"],["≈1.5 s","box_exec round trip (was 20 s)"],["13 s","box_reset (was 30 s)"],
+["0","network adapters with network=off"],["≈17 s","empty-sandbox snapshot (≈3 MB)"],["3/3","planted add-in, autoload, task detected"]],
+tools:[["box_start","clean boot"],["box_status","state & owner"],["box_reset","discard, fresh one"],["box_trial","one repeat trial"],
+["box_exec","run PowerShell"],["box_copy_in","copy files in"],["box_copy_out","copy files out"],["box_screenshot","screen PNG"],
+["box_snapshot","files, registry, services…"],["box_diff","before/after diff"],["box_stop","discard"]],
+p1:"stdlib Python + PowerShell",p2:"no pip · no Node",p3:"MIT",foot:"Not yet measured: loading an add-in in Office inside the sandbox"}};
+const L=T[new URLSearchParams(location.search).get("lang")||"ko"];
+document.documentElement.lang=L===T.en?"en":"ko";
+document.querySelectorAll("[data-k]").forEach(e=>e.innerHTML=L[e.dataset.k]);
+tools.innerHTML=L.tools.map(([a,b])=>`<div class="t">${a}<small>${b}</small></div>`).join("");
+nums.innerHTML=L.nums.map(([a,b])=>`<div class="n"><b>${a}</b><span>${b}</span></div>`).join("");
+</script></body></html>
